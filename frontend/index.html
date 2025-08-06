@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Cooperativa Musical</title>
+    <link rel="stylesheet" href="/public/styles.css" />
+</head>
+<body>
+<header>
+    <h1>COOPERATIVA</h1>
+    <nav>
+        <a href="/novedades">Novedades</a>
+        <a href="/redes">Redes Sociales</a>
+    </nav>
+</header>
+
+<main class="card-container" id="card-container">
+    <!-- Aquí se insertarán dinámicamente las tarjetas -->
+</main>
+
+<script>
+    const ARTIST_IDS = [
+      "7N2acqBH3hYNE7LF67N53y", // WNK
+      "5Txb1Eoi4buQ8XQSLLQvil", // G.Aguiar
+      "0fr32bvI5zFYxkrQ3GkBzy"  // Sousa
+    ];
+
+    const NOMBRES_ARTISTAS = {
+      "7N2acqBH3hYNE7LF67N53y": {
+        nombre: "WNK",
+        genero: "Trap, Supertrap",
+        bio: "Artista emergente de la escena urbana con letras oscuras y producción experimental. Fundador de la cooperativa.",
+        instagram: "https://instagram.com/amigo1",
+        twitter: "https://twitter.com/amigo1"
+      },
+      "5Txb1Eoi4buQ8XQSLLQvil": {
+        nombre: "G.Aguiar",
+        genero: "Trap melódico, Reggaetón oscuro",
+        bio: "Productor y cantante versátil con un estilo que mezcla ritmos latinos y beats experimentales.",
+        instagram: "https://instagram.com/amigo2",
+        twitter: "https://twitter.com/amigo2"
+      },
+      "0fr32bvI5zFYxkrQ3GkBzy": {
+        nombre: "Sousa",
+        genero: "Supertrap, Electrónica urbana",
+        bio: "Con influencias del techno y trap francés, su música destaca por atmósferas densas y letras introspectivas.",
+        instagram: "https://instagram.com/amigo3",
+        twitter: "https://twitter.com/amigo3"
+      }
+    };
+
+    async function cargarArtistas() {
+      try {
+        const res = await fetch(`/api/spotify/artists?ids=${ARTIST_IDS.join(",")}`);
+        const artistas = await res.json();
+        const container = document.getElementById("card-container");
+
+        artistas.forEach(artista => {
+          const infoExtra = NOMBRES_ARTISTAS[artista.id];
+          const card = document.createElement("div");
+          card.className = "card";
+          card.onclick = () => card.classList.toggle("flipped");
+
+          card.innerHTML = `
+            <div class="card-inner">
+              <div class="card-front">
+                <img src="${artista.imagen}" alt="${artista.nombre}" />
+                <h2>${artista.nombre}</h2>
+                <p>Oyentes mensuales: ${artista.oyentes.toLocaleString()}</p>
+                <a href="${artista.urlSpotify}" target="_blank">Spotify</a>
+              </div>
+              <div class="card-back" style="background-image: url('${artista.imagen}'); background-size: cover;">
+                <div class="overlay">
+                  <h2>${artista.nombre}</h2>
+                  <p><strong>Géneros:</strong> ${infoExtra.genero}</p>
+                  <p><strong>Bio:</strong> ${infoExtra.bio}</p>
+                  <ul>
+                    <li><a href="${artista.urlSpotify}" target="_blank">Spotify</a></li>
+                    <li><a href="${infoExtra.instagram}" target="_blank">Instagram</a></li>
+                    <li><a href="${infoExtra.twitter}" target="_blank">Twitter</a></li>
+                  </ul>
+                  <button onclick="event.stopPropagation(); flipCard(this.closest('.card'))">Cerrar</button>
+                </div>
+              </div>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error("Error al cargar artistas:", err);
+      }
+    }
+
+    cargarArtistas();
+</script>
+</body>
+</html>
