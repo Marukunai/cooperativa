@@ -31,22 +31,16 @@
         nombre: "WNK",
         genero: "Trap, Supertrap",
         bio: "Artista emergente de la escena urbana con letras oscuras y producción experimental. Fundador de la cooperativa.",
-        instagram: "https://instagram.com/amigo1",
-        twitter: "https://twitter.com/amigo1"
       },
       "5Txb1Eoi4buQ8XQSLLQvil": {
         nombre: "G.Aguiar",
         genero: "Trap melódico, Reggaetón oscuro",
         bio: "Productor y cantante versátil con un estilo que mezcla ritmos latinos y beats experimentales.",
-        instagram: "https://instagram.com/amigo2",
-        twitter: "https://twitter.com/amigo2"
       },
       "0fr32bvI5zFYxkrQ3GkBzy": {
         nombre: "Sousa",
         genero: "Supertrap, Electrónica urbana",
         bio: "Con influencias del techno y trap francés, su música destaca por atmósferas densas y letras introspectivas.",
-        instagram: "https://instagram.com/amigo3",
-        twitter: "https://twitter.com/amigo3"
       }
     };
 
@@ -62,12 +56,24 @@
           card.className = "card";
           card.onclick = () => card.classList.toggle("flipped");
 
+          const iframes = artista.topTracks.map(track => {
+            const trackId = track.spotify_url.split("/track/")[1];
+            return `
+              <div style="margin-bottom: 12px;">
+                <iframe style="border-radius:12px"
+                        src="https://open.spotify.com/embed/track/${trackId}?utm_source=cooperativa"
+                        width="100%" height="80" frameBorder="0" allowfullscreen
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                        loading="lazy">
+                </iframe>
+              </div>`;
+          }).join("");
+
           card.innerHTML = `
             <div class="card-inner">
               <div class="card-front">
                 <img src="${artista.imagen}" alt="${artista.nombre}" />
                 <h2>${artista.nombre}</h2>
-                <p>Oyentes mensuales: ${artista.oyentes.toLocaleString()}</p>
                 <a href="${artista.urlSpotify}" target="_blank">Spotify</a>
               </div>
               <div class="card-back" style="background-image: url('${artista.imagen}'); background-size: cover;">
@@ -75,11 +81,8 @@
                   <h2>${artista.nombre}</h2>
                   <p><strong>Géneros:</strong> ${infoExtra.genero}</p>
                   <p><strong>Bio:</strong> ${infoExtra.bio}</p>
-                  <ul>
-                    <li><a href="${artista.urlSpotify}" target="_blank">Spotify</a></li>
-                    <li><a href="${infoExtra.instagram}" target="_blank">Instagram</a></li>
-                    <li><a href="${infoExtra.twitter}" target="_blank">Twitter</a></li>
-                  </ul>
+                  <p><strong>Top canciones:</strong></p>
+                  ${iframes}
                   <button onclick="event.stopPropagation(); flipCard(this.closest('.card'))">Cerrar</button>
                 </div>
               </div>

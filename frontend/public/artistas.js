@@ -11,6 +11,19 @@ async function cargarArtistas() {
   const artistas = await res.json();
 
   artistas.forEach(artista => {
+    const iframes = artista.topTracks.map(track => {
+      const trackId = track.spotify_url.split("/track/")[1];
+      return `
+        <div style="margin-bottom: 12px;">
+          <iframe style="border-radius:12px"
+                  src="https://open.spotify.com/embed/track/${trackId}?utm_source=cooperativa"
+                  width="100%" height="80" frameBorder="0" allowfullscreen
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  loading="lazy">
+          </iframe>
+        </div>`;
+    }).join("");
+
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
@@ -18,7 +31,6 @@ async function cargarArtistas() {
         <div class="card-front">
           <img src="${artista.imagen}" alt="${artista.nombre}" />
           <h2>${artista.nombre}</h2>
-          <p>Oyentes mensuales: ${artista.oyentes.toLocaleString()}</p>
           <a href="${artista.urlSpotify}" target="_blank">Spotify</a>
         </div>
         <div class="card-back" style="background-image: url('${artista.imagen}'); background-size: cover;">
@@ -26,6 +38,8 @@ async function cargarArtistas() {
             <h3>${artista.nombre}</h3>
             <p>Géneros:</p>
             <ul>${artista.generos.map(g => `<li>${g}</li>`).join("")}</ul>
+            <p><strong>Top canciones:</strong></p>
+            ${iframes}
             <button onclick="event.stopPropagation(); flipCard(this.closest('.card'))">Cerrar</button>
           </div>
         </div>

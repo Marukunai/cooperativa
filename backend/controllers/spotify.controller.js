@@ -5,53 +5,46 @@ const getArtistInfo = async (req, res) => {
   let artistIds = req.query.ids;
   artistIds = Array.isArray(artistIds) ? artistIds.join(",") : artistIds;
 
-  console.log("📥 IDs recibidos:", artistIds);
-
   if (!artistIds) {
-    console.log("⚠️ No se proporcionaron IDs de artistas");
     return res.status(400).json({ error: "Faltan IDs de artistas" });
   }
 
   try {
     const token = await getSpotifyToken();
-    console.log("🔑 Token de Spotify obtenido correctamente");
-
-    const url = "https://api.spotify.com/v1/artists";
-    const params = { ids: artistIds };
     const headers = { Authorization: `Bearer ${token}` };
 
-    console.log("📤 Llamando a Spotify con:");
-    console.log("URL:", url);
-    console.log("Params:", params);
-    console.log("Headers:", headers);
-
-    const response = await axios.get(url, {
+    // 1. Obtener info básica
+    const artistResponse = await axios.get("https://api.spotify.com/v1/artists", {
       headers,
-      params,
+      params: { ids: artistIds },
     });
 
-    console.log("✅ Respuesta recibida de Spotify");
+    const artistasRaw = artistResponse.data.artists;
 
-    const artistas = response.data.artists.map((artista) => ({
-      id: artista.id,
-      nombre: artista.name,
-      imagen: artista.images?.[0]?.url || "",
-      generos: artista.genres,
-      oyentes: artista.followers.total,
-      urlSpotify: artista.external_urls.spotify,
+    // 2. Obtener top tracks por artista
+    const artistas = await Promise.all(artistasRaw.map(async (artista) => {
+      const topTracksRes = await axios.get(`https://api.spotify.com/v1/artists/${artista.id}/top-tracks?market=ES`, { headers });
+      const topTracks = topTracksRes.data.tracks.slice(0, 5).map(track => ({
+        nombre: track.name,
+        preview_url: track.preview_url,
+        spotify_url: track.external_urls.spotify,
+      }));
+
+      return {
+        id: artista.id,
+        nombre: artista.name,
+        imagen: artista.images?.[0]?.url || "",
+        generos: artista.genres,
+        oyentes: artista.followers.total,
+        urlSpotify: artista.external_urls.spotify,
+        topTracks
+      };
     }));
 
     res.json(artistas);
   } catch (error) {
-    console.error("❌ Error obteniendo info de artistas:", error.message);
-
-    // Debug extra
-    if (error.response) {
-      console.error("➡️ Código de estado:", error.response.status);
-      console.error("➡️ Datos del error:", error.response.data);
-    }
-
-    res.status(500).json({ error: "Error al obtener los artistas desde Spotify" });
+    console.error("❌ Error:", error.response?.data || error.message);
+    res.status(500).json({ error: "Error al obtener artistas desde Spotify" });
   }
 };
 
