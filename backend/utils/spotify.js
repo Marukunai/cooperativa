@@ -5,9 +5,7 @@ require("dotenv").config();
 let accessToken = null;
 
 async function getSpotifyAccessToken() {
-  const data = {
-    grant_type: "client_credentials",
-  };
+  const data = {grant_type: "client_credentials",};
 
   const headers = {
     "Content-Type": "application/x-www-form-urlencoded",

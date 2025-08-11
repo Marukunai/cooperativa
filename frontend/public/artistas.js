@@ -12,12 +12,13 @@ async function cargarArtistas() {
 
   artistas.forEach(artista => {
     const iframes = artista.topTracks.map(track => {
-      const trackId = track.spotify_url.split("/track/")[1];
+      const trackId = (track.spotify_url.split("/track/")[1] || "").split("?")[0];
       return `
         <div style="margin-bottom: 12px;">
-          <iframe style="border-radius:12px"
+          <iframe class="spotify-embed"
+                  style="border-radius:12px"
                   src="https://open.spotify.com/embed/track/${trackId}?utm_source=cooperativa"
-                  width="100%" height="80" frameBorder="0" allowfullscreen
+                  width="100%" height="152" frameBorder="0" allowfullscreen
                   allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                   loading="lazy">
           </iframe>
@@ -31,15 +32,23 @@ async function cargarArtistas() {
         <div class="card-front">
           <img src="${artista.imagen}" alt="${artista.nombre}" />
           <h2>${artista.nombre}</h2>
-          <a href="${artista.urlSpotify}" target="_blank">Spotify</a>
+          <a href="${artista.urlSpotify}?utm_source=coop_site&utm_medium=card_front&utm_campaign=artist_profile" target="_blank">Escuchar en Spotify</a>
         </div>
         <div class="card-back" style="background-image: url('${artista.imagen}'); background-size: cover;">
           <div class="overlay">
             <h3>${artista.nombre}</h3>
-            <p>Géneros:</p>
+            <p><strong>Géneros:</strong></p>
             <ul>${artista.generos.map(g => `<li>${g}</li>`).join("")}</ul>
+
             <p><strong>Top canciones:</strong></p>
             ${iframes}
+
+            <div class="social-links">
+              <a href="${artista.urlSpotify}?utm_source=coop_site&utm_medium=card_back&utm_campaign=artist_profile" target="_blank">Spotify</a> ·
+              <a href="https://instagram.com/amigo1" target="_blank">Instagram</a> ·
+              <a href="https://twitter.com/amigo1" target="_blank">Twitter</a>
+            </div>
+
             <button onclick="event.stopPropagation(); flipCard(this.closest('.card'))">Cerrar</button>
           </div>
         </div>
@@ -48,4 +57,8 @@ async function cargarArtistas() {
     card.addEventListener("click", () => flipCard(card));
     contenedor.appendChild(card);
   });
+}
+
+function flipCard(cardElement) {
+  cardElement.classList.toggle("flipped");
 }

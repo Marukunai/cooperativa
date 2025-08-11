@@ -11,13 +11,11 @@
     <h1>COOPERATIVA</h1>
     <nav>
         <a href="/novedades">Novedades</a>
-        <a href="/redes">Redes Sociales</a>
+        <!-- Enlace a Redes eliminado -->
     </nav>
 </header>
 
-<main class="card-container" id="card-container">
-    <!-- Aquí se insertarán dinámicamente las tarjetas -->
-</main>
+<main class="card-container" id="card-container"></main>
 
 <script>
     const ARTIST_IDS = [
@@ -26,23 +24,44 @@
       "0fr32bvI5zFYxkrQ3GkBzy"  // Sousa
     ];
 
+    // Redes + bio locales (añado spotify)
     const NOMBRES_ARTISTAS = {
       "7N2acqBH3hYNE7LF67N53y": {
         nombre: "WNK",
         genero: "Trap, Supertrap",
         bio: "Artista emergente de la escena urbana con letras oscuras y producción experimental. Fundador de la cooperativa.",
+        spotify: "https://open.spotify.com/artist/7N2acqBH3hYNE7LF67N53y",
+        instagram: "https://www.instagram.com/_wnk._/",
+        twitter: "https://twitter.com/amigo1"
       },
       "5Txb1Eoi4buQ8XQSLLQvil": {
         nombre: "G.Aguiar",
         genero: "Trap melódico, Reggaetón oscuro",
         bio: "Productor y cantante versátil con un estilo que mezcla ritmos latinos y beats experimentales.",
+        spotify: "https://open.spotify.com/artist/5Txb1Eoi4buQ8XQSLLQvil",
+        instagram: "https://www.instagram.com/g.aguiarrr/",
+        twitter: "https://twitter.com/amigo2"
       },
       "0fr32bvI5zFYxkrQ3GkBzy": {
         nombre: "Sousa",
         genero: "Supertrap, Electrónica urbana",
         bio: "Con influencias del techno y trap francés, su música destaca por atmósferas densas y letras introspectivas.",
+        spotify: "https://open.spotify.com/artist/0fr32bvI5zFYxkrQ3GkBzy",
+        instagram: "https://www.instagram.com/_sooussa_/",
+        twitter: "https://twitter.com/amigo3"
       }
     };
+
+    // Previene flip si el click viene de un elemento interactivo
+    function handleCardClick(e, cardEl) {
+      const t = e.target;
+      const tag = t.tagName.toLowerCase();
+      const interactive = ["a", "button", "audio", "video", "iframe", "input", "select", "textarea"];
+      if (interactive.includes(tag) || t.closest(".no-flip")) return; // no girar
+      cardEl.classList.toggle("flipped");
+    }
+
+    function stop(e) { e.stopPropagation(); }
 
     async function cargarArtistas() {
       try {
@@ -54,15 +73,16 @@
           const infoExtra = NOMBRES_ARTISTAS[artista.id];
           const card = document.createElement("div");
           card.className = "card";
-          card.onclick = () => card.classList.toggle("flipped");
+          card.addEventListener("click", (e) => handleCardClick(e, card));
 
           const iframes = artista.topTracks.map(track => {
-            const trackId = track.spotify_url.split("/track/")[1];
+            const trackId = (track.spotify_url.split("/track/")[1] || "").split("?")[0];
             return `
-              <div style="margin-bottom: 12px;">
-                <iframe style="border-radius:12px"
+              <div class="no-flip" style="margin-bottom: 12px;">
+                <iframe class="spotify-embed"
+                        style="border-radius:12px"
                         src="https://open.spotify.com/embed/track/${trackId}?utm_source=cooperativa"
-                        width="100%" height="80" frameBorder="0" allowfullscreen
+                        width="100%" height="152" frameBorder="0" allowfullscreen
                         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                         loading="lazy">
                 </iframe>
@@ -74,16 +94,37 @@
               <div class="card-front">
                 <img src="${artista.imagen}" alt="${artista.nombre}" />
                 <h2>${artista.nombre}</h2>
-                <a href="${artista.urlSpotify}" target="_blank">Spotify</a>
+                <a class="btn-spotify no-flip"
+                   href="${artista.urlSpotify}?utm_source=coop_site&utm_medium=card_front&utm_campaign=artist_profile"
+                   target="_blank" rel="noopener" onclick="event.stopPropagation()">
+                   Escuchar en Spotify
+                </a>
               </div>
               <div class="card-back" style="background-image: url('${artista.imagen}'); background-size: cover;">
                 <div class="overlay">
                   <h2>${artista.nombre}</h2>
                   <p><strong>Géneros:</strong> ${infoExtra.genero}</p>
                   <p><strong>Bio:</strong> ${infoExtra.bio}</p>
+
                   <p><strong>Top canciones:</strong></p>
                   ${iframes}
-                  <button onclick="event.stopPropagation(); flipCard(this.closest('.card'))">Cerrar</button>
+
+                  <div class="social-links no-flip">
+                    <a href="${infoExtra.spotify || artista.urlSpotify}?utm_source=coop_site&utm_medium=card_back&utm_campaign=artist_profile"
+                       target="_blank" rel="noopener" onclick="event.stopPropagation()">
+                      <img src="/public/icons/spotify_icon.png" alt="Spotify" />
+                    </a>
+                    <a href="${infoExtra.instagram}" target="_blank" rel="noopener" onclick="event.stopPropagation()">
+                      <img src="/public/icons/instagram_icon.png" alt="Instagram" />
+                    </a>
+                    <a href="${infoExtra.twitter}" target="_blank" rel="noopener" onclick="event.stopPropagation()">
+                      <img src="/public/icons/twitter_icon.png" alt="Twitter/X" />
+                    </a>
+                  </div>
+
+                  <button class="no-flip" onclick="event.stopPropagation(); this.closest('.card').classList.remove('flipped')">
+                    Cerrar
+                  </button>
                 </div>
               </div>
             </div>

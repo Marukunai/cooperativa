@@ -23,6 +23,9 @@ app.use(express.json());
 const spotifyRoutes = require("./routes/spotify.routes");
 app.use("/api/spotify", spotifyRoutes);
 
+const novedadesRoutes = require("./routes/novedades.routes");
+app.use("/api/novedades", novedadesRoutes);
+
 app.use(logMiddleware);
 
 // Servir archivos estáticos (CSS, imágenes, etc.)

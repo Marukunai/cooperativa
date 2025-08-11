@@ -11,22 +11,104 @@
     <h1>NOVEDADES</h1>
     <nav>
         <a href="/">Inicio</a>
-        <a href="/redes">Redes Sociales</a>
     </nav>
 </header>
 
 <main class="novedades">
-    <div class="single">
-        <img src="/public/img/cancion1.jpg" alt="Portada 1" />
-        <h2>🔥 NUEVO TEMA: “Sube el Ritmo”</h2>
-        <a class="presave" href="https://spotify.com/presave/link1" target="_blank">Pre-save en Spotify</a>
-    </div>
+    <!-- Destacado -->
+    <section id="featured" class="novedades-hero"></section>
 
-    <div class="single">
-        <img src="/public/img/cancion2.jpg" alt="Portada 2" />
-        <h2>🎶 PRÓXIMAMENTE: “Trap del Barrio”</h2>
-        <a class="presave" href="https://spotify.com/presave/link2" target="_blank">Pre-save en Spotify</a>
-    </div>
+    <!-- Próximos lanzamientos -->
+    <section class="novedades-section">
+        <h2>Próximos lanzamientos</h2>
+        <div id="upcomingGrid" class="release-grid"></div>
+    </section>
+
+    <!-- Lanzamientos recientes (carrusel/rail) -->
+    <section class="novedades-section">
+        <h2>Reciente</h2>
+        <div class="rail-wrap">
+            <div id="recentRail" class="release-rail"></div>
+        </div>
+    </section>
 </main>
+
+<script>
+    function albumEmbedSrc(albumId) {
+      return `https://open.spotify.com/embed/album/${albumId}?utm_source=cooperativa`;
+    }
+
+    function createFeatured(item) {
+      if (!item) return `<p>No hay novedades destacadas en los últimos 30 días.</p>`;
+      return `
+        <div class="featured-card">
+          <div class="feat-left">
+            <img src="${item.image}" alt="${item.name}" />
+          </div>
+          <div class="feat-right">
+            <h3>${item.type === "single" ? "Nuevo single" : "Nuevo álbum"}</h3>
+            <h1>${item.name}</h1>
+            <p class="feat-date">Lanzamiento: ${item.releaseDate}</p>
+            <div class="feat-ctas">
+              <a class="btn-spotify" href="${item.url}?utm_source=coop_site&utm_medium=novedades_featured" target="_blank" rel="noopener">Escuchar en Spotify</a>
+              ${item.presave ? `<a class="btn-presave" href="${item.presave}" target="_blank" rel="noopener">Pre-save</a>` : ""}
+            </div>
+            <div class="feat-embed">
+              <iframe class="spotify-embed" src="${albumEmbedSrc(item.id)}" width="100%" height="352" frameBorder="0" allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function createUpcomingCard(item) {
+      return `
+        <div class="release-card">
+          <img src="${item.image}" alt="${item.name}" />
+          <div class="release-info">
+            <h4>${item.name}</h4>
+            <p class="release-meta">${item.type.toUpperCase()} • ${item.releaseDate}</p>
+            <div class="release-actions">
+              ${item.presave ? `<a class="btn-presave" href="${item.presave}" target="_blank" rel="noopener">Pre-save</a>` : `<a class="btn-ghost" href="${item.url}" target="_blank" rel="noopener">Ver en Spotify</a>`}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function createRecentTile(item) {
+      return `
+        <a class="release-tile" href="${item.url}?utm_source=coop_site&utm_medium=novedades_recent" target="_blank" rel="noopener">
+          <img src="${item.image}" alt="${item.name}" />
+          <span class="tile-caption">${item.name}</span>
+        </a>
+      `;
+    }
+
+    async function cargarNovedades() {
+      try {
+        const res = await fetch("/api/novedades");
+        const data = await res.json();
+
+        // Destacado
+        document.getElementById("featured").innerHTML = createFeatured(data.featured);
+
+        // Próximos (grid)
+        const upcomingGrid = document.getElementById("upcomingGrid");
+        upcomingGrid.innerHTML = data.upcoming.map(createUpcomingCard).join("");
+
+        // Recientes (rail)
+        const recentRail = document.getElementById("recentRail");
+        recentRail.innerHTML = data.recent.map(createRecentTile).join("");
+
+      } catch (e) {
+        console.error("Error cargando novedades:", e);
+        document.getElementById("featured").innerHTML = "<p>Error cargando novedades.</p>";
+      }
+    }
+
+    cargarNovedades();
+</script>
 </body>
 </html>
